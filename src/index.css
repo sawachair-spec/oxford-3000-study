@@ -36,6 +36,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .primary-cta:hover { background: #1e55c5; transform: translateY(-1px); }
 .primary-cta:active { transform: scale(.985); }
 .primary-cta span { margin-right: 8px; font-size: 14px; }
+.weekly-goal-card { margin-top: 22px; padding: 17px 18px; background: #f6f9ff; border: 1px solid #d7e3fb; border-radius: 14px; }
+.weekly-goal-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; color: var(--blue); font-size: 13px; font-weight: 800; }
+.weekly-goal-head label { display: flex; align-items: center; gap: 6px; color: var(--ink); font-weight: 700; }
+.weekly-goal-head input { width: 76px; height: 38px; padding: 0 8px; border: 1px solid #bdccec; border-radius: 9px; background: white; text-align: right; font-weight: 800; outline: 0; }
+.weekly-goal-head input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+.weekly-progress { height: 9px; margin-top: 14px; overflow: hidden; border-radius: 999px; background: #dfe8f7; }
+.weekly-progress i { display: block; min-width: 2px; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--blue), #5d8deb); transition: width .25s ease; }
+.weekly-goal-card > p { display: flex; align-items: baseline; gap: 4px; margin: 10px 0 0; color: var(--muted); font-size: 12px; }
+.weekly-goal-card > p strong { color: var(--blue); font-size: 22px; }
+.weekly-goal-card > p span { margin-left: auto; }
 .home-page > section + section { margin-top: 30px; }
 .section-heading { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
 .section-heading h2 { margin: 0; font-size: 22px; letter-spacing: -.03em; }
@@ -54,6 +64,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .cefr-pills button { height: 48px; border-radius: 999px; border: 1px solid #cfc2aa; color: var(--olive); background: rgba(255,255,255,.46); font-family: Georgia, serif; font-weight: 700; cursor: pointer; }
 .cefr-pills button.active { color: white; background: var(--olive); border-color: var(--olive); box-shadow: 0 5px 12px rgba(74, 81, 53, .13); }
 .cefr-pills.compact { margin: 0; }
+.level-picker-label { margin: 0 0 9px; color: var(--olive); font-size: 12px; font-weight: 700; }
 .recent-list { display: grid; gap: 12px; }
 .history-card { min-height: 92px; width: 100%; display: grid; grid-template-columns: 120px 1fr auto 18px; grid-template-rows: auto 1fr; align-items: center; gap: 3px 20px; position: relative; padding: 16px 18px; text-align: left; background: var(--paper-card); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 3px 8px rgba(79, 61, 33, .05); cursor: pointer; }
 .time { grid-row: 1; grid-column: 1; color: var(--olive); font-family: Georgia, serif; font-size: 12px; }
@@ -91,7 +102,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .study-page, .quiz-page, .detail-page { max-width: 760px; }
 .study-head { min-height: 48px; display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 13px; }
 .study-head button { min-height: 44px; border: 0; background: none; color: var(--blue); font-weight: 700; cursor: pointer; }
-.study-settings { display: grid; grid-template-columns: 1fr auto; gap: 12px; margin: 12px 0 20px; }
+.study-settings { display: grid; gap: 12px; margin: 12px 0 20px; }
+.study-levels > span { display: block; margin-bottom: 8px; color: var(--muted); font-size: 11px; font-weight: 700; }
+.study-controls { display: grid; grid-template-columns: 1fr 110px; gap: 10px; }
+.shuffle-button { min-height: 44px; border: 1px solid #d9dfe7; border-radius: 999px; background: white; color: var(--olive); font-size: 12px; font-weight: 800; cursor: pointer; }
 .direction-toggle { min-width: 95px; border: 1px solid #d9dfe7; border-radius: 999px; background: white; color: var(--blue); font-weight: 800; cursor: pointer; }
 .study-card { min-height: 390px; padding: 34px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: var(--paper-card); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 18px 40px rgba(64, 50, 28, .08); position: relative; overflow: hidden; }
 .study-card::before { content: ""; position: absolute; inset: 0 0 auto; height: 6px; background: linear-gradient(90deg, var(--blue) 0 50%, var(--terracotta) 50%); }
@@ -190,7 +204,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .word-row .chevron { grid-column: 2; grid-row: 1 / span 2; }
   .study-card { min-height: 370px; padding: 28px 22px; }
   .answer-panel { width: calc(100% + 44px); margin-left: -22px; margin-right: -22px; margin-bottom: -28px; }
-  .study-settings { grid-template-columns: 1fr; }
   .direction-toggle { height: 44px; }
   .rating-buttons { gap: 6px; }
   .rating-buttons button { padding: 8px 4px; }
