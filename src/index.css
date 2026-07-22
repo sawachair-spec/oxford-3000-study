@@ -38,14 +38,20 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .primary-cta span { margin-right: 8px; font-size: 14px; }
 .weekly-goal-card { margin-top: 22px; padding: 17px 18px; background: #f6f9ff; border: 1px solid #d7e3fb; border-radius: 14px; }
 .weekly-goal-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; color: var(--blue); font-size: 13px; font-weight: 800; }
-.weekly-goal-head label { display: flex; align-items: center; gap: 6px; color: var(--ink); font-weight: 700; }
-.weekly-goal-head input { width: 76px; height: 38px; padding: 0 8px; border: 1px solid #bdccec; border-radius: 9px; background: white; text-align: right; font-weight: 800; outline: 0; }
-.weekly-goal-head input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+.weekly-goal-head b { color: var(--muted); font-size: 10px; }
 .weekly-progress { height: 9px; margin-top: 14px; overflow: hidden; border-radius: 999px; background: #dfe8f7; }
 .weekly-progress i { display: block; min-width: 2px; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--blue), #5d8deb); transition: width .25s ease; }
 .weekly-goal-card > p { display: flex; align-items: baseline; gap: 4px; margin: 10px 0 0; color: var(--muted); font-size: 12px; }
 .weekly-goal-card > p strong { color: var(--blue); font-size: 22px; }
 .weekly-goal-card > p span { margin-left: auto; }
+.week-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 13px; }
+.week-days div { min-width: 0; padding: 7px 2px; border: 1px solid #d9e3f4; border-radius: 9px; background: rgba(255,255,255,.68); text-align: center; }
+.week-days span, .week-days b { display: block; }
+.week-days span { color: var(--muted); font-size: 9px; }
+.week-days b { margin-top: 3px; font-size: 10px; }
+.week-days div.today { border-color: var(--blue); background: white; box-shadow: 0 0 0 2px var(--blue-soft); }
+.week-days div.today span, .week-days div.today b { color: var(--blue); }
+.week-days div.done { border-color: #91ae84; background: #f2f8ef; }
 .home-page > section + section { margin-top: 30px; }
 .section-heading { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
 .section-heading h2 { margin: 0; font-size: 22px; letter-spacing: -.03em; }
