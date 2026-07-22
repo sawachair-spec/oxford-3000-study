@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 type Cefr = "A1" | "A2" | "B1" | "B2";
 type View = "home" | "search" | "study" | "quiz" | "history" | "detail";
 type Result = "unknown" | "uncertain" | "known" | "correct" | "incorrect";
+type RevealStage = "word" | "hint" | "answer";
 
 type WordRecord = {
   id: string;
@@ -105,8 +106,8 @@ export default function Home() {
   const [weeklySetIds, setWeeklySetIds] = useState<string[]>([]);
   const [studyOrderIds, setStudyOrderIds] = useState<string[]>([]);
   const [studyIndex, setStudyIndex] = useState(0);
-  const [revealed, setRevealed] = useState(false);
-  const [direction, setDirection] = useState<"en-ja" | "ja-en">("en-ja");
+  const [revealStage, setRevealStage] = useState<RevealStage>("word");
+  const direction: "en-ja" = "en-ja";
   const [query, setQuery] = useState("");
   const [posFilter, setPosFilter] = useState("all");
   const [quizChoices, setQuizChoices] = useState<WordRecord[]>([]);
@@ -164,7 +165,7 @@ export default function Home() {
     setWeeklySetIds(weeklyIds);
     setStudyOrderIds(shuffle(weeklyIds));
     setStudyIndex(0);
-    setRevealed(false);
+    setRevealStage("word");
   }, [records]);
 
   const studyDeck = useMemo(
@@ -220,7 +221,7 @@ export default function Home() {
   function reshuffleStudy() {
     setStudyOrderIds((ids) => shuffle(ids));
     setStudyIndex(0);
-    setRevealed(false);
+    setRevealStage("word");
     setQuizAnswered(null);
   }
 
@@ -240,7 +241,7 @@ export default function Home() {
   function rateCard(result: Result) {
     if (!current) return;
     addHistory(current, "card", result);
-    setRevealed(false);
+    setRevealStage("word");
     setStudyIndex((value) => value + 1);
   }
 
@@ -285,7 +286,7 @@ export default function Home() {
       recordIds: updatedSet,
     }));
     setStudyIndex(0);
-    setRevealed(false);
+    setRevealStage("word");
     navigate("study");
   }
 
@@ -386,21 +387,30 @@ export default function Home() {
               <span className="study-pool-note">全3,809レコードから選ばれた今週の200単語</span>
               <div className="study-controls">
                 <button className="shuffle-button" onClick={reshuffleStudy}>順番をシャッフル</button>
-                <button className="direction-toggle" onClick={() => setDirection((value) => value === "en-ja" ? "ja-en" : "en-ja")}>{direction === "en-ja" ? "英 → 日" : "日 → 英"}</button>
               </div>
             </div>
             {current ? <>
-              <section className={`study-card ${revealed ? "revealed" : ""}`}>
-                <span className="level-chip">{current.cefr} · {posJa[current.part_of_speech] ?? current.part_of_speech}</span>
-                <p className="prompt-label">{direction === "en-ja" ? "この語義は？" : "この英単語は？"}</p>
-                <h1>{direction === "en-ja" ? displayWord(current.word) : current.japanese_gloss}</h1>
-                <p className="sense">{direction === "en-ja" ? current.sense_label : current.japanese_definition}</p>
-                {revealed && <div className="answer-panel">
-                  <span>ANSWER</span><h2>{direction === "en-ja" ? current.japanese_gloss : displayWord(current.word)}</h2>
-                  <p>{current.english_definition}</p><p>{current.japanese_definition}</p>
+              <section className={`study-card stage-${revealStage}`}>
+                <h1>{displayWord(current.word)}</h1>
+                {revealStage === "hint" && <div className="hint-panel">
+                  <span>HINT · ENGLISH DEFINITION</span>
+                  <p>{current.english_definition}</p>
+                </div>}
+                {revealStage === "answer" && <div className="answer-panel">
+                  <span>ANSWER</span>
+                  <h2>{current.japanese_gloss}</h2>
+                  <dl>
+                    <div><dt>レベル・品詞</dt><dd>{current.cefr} · {posJa[current.part_of_speech] ?? current.part_of_speech}</dd></div>
+                    <div><dt>語義</dt><dd>{current.sense_label || "—"}</dd></div>
+                    <div><dt>English definition</dt><dd>{current.english_definition}</dd></div>
+                    <div><dt>日本語定義</dt><dd>{current.japanese_definition}</dd></div>
+                  </dl>
                 </div>}
               </section>
-              {!revealed ? <button className="primary-cta reveal-button" onClick={() => setRevealed(true)}>答えを見る</button> :
+              {revealStage !== "answer" ? <div className="reveal-actions">
+                <button className="hint-button" disabled={revealStage === "hint"} onClick={() => setRevealStage("hint")}>{revealStage === "hint" ? "ヒント表示中" : "ヒント"}</button>
+                <button className="primary-cta reveal-button" onClick={() => setRevealStage("answer")}>答え</button>
+              </div> :
                 <div className="rating-buttons">
                   <button onClick={() => rateCard("unknown")}><b>1</b>わからない</button>
                   <button onClick={() => rateCard("uncertain")}><b>2</b>あいまい</button>

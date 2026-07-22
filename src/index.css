@@ -110,20 +110,29 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .study-head button { min-height: 44px; border: 0; background: none; color: var(--blue); font-weight: 700; cursor: pointer; }
 .study-settings { display: grid; gap: 12px; margin: 12px 0 20px; }
 .study-pool-note { color: var(--muted); font-size: 11px; font-weight: 700; text-align: center; }
-.study-controls { display: grid; grid-template-columns: 1fr 110px; gap: 10px; }
+.study-controls { display: grid; grid-template-columns: 1fr; gap: 10px; }
 .shuffle-button { min-height: 44px; border: 1px solid #d9dfe7; border-radius: 999px; background: white; color: var(--olive); font-size: 12px; font-weight: 800; cursor: pointer; }
-.direction-toggle { min-width: 95px; border: 1px solid #d9dfe7; border-radius: 999px; background: white; color: var(--blue); font-weight: 800; cursor: pointer; }
 .study-card { min-height: 390px; padding: 34px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: var(--paper-card); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 18px 40px rgba(64, 50, 28, .08); position: relative; overflow: hidden; }
 .study-card::before { content: ""; position: absolute; inset: 0 0 auto; height: 6px; background: linear-gradient(90deg, var(--blue) 0 50%, var(--terracotta) 50%); }
 .level-chip { position: absolute; top: 24px; color: var(--olive); background: #efeadb; border-radius: 999px; padding: 6px 11px; font-size: 11px; font-weight: 700; }
 .prompt-label { color: var(--muted); font-size: 12px; }
 .study-card > h1 { margin: 8px 0; font-family: Georgia, "Yu Mincho", serif; font-size: clamp(44px, 10vw, 72px); line-height: 1.1; }
 .sense { max-width: 520px; color: var(--muted); }
+.hint-panel { width: min(100%, 560px); margin-top: 34px; padding: 24px; background: #f6f3e9; border: 1px solid var(--line); border-radius: 14px; }
+.hint-panel span { color: var(--olive); font-size: 9px; letter-spacing: .14em; font-weight: 900; }
+.hint-panel p { margin: 10px 0 0; color: #4f5945; font-family: Georgia, serif; font-size: 18px; line-height: 1.65; }
 .answer-panel { width: calc(100% + 68px); margin: 24px -34px -34px; padding: 22px 30px 28px; background: var(--blue-soft); border-top: 1px solid #cbdcff; }
 .answer-panel span { color: var(--blue); font-size: 9px; letter-spacing: .2em; font-weight: 900; }
 .answer-panel h2 { margin: 5px 0 10px; font-size: 28px; }
 .answer-panel p { margin: 7px 0; font-size: 13px; color: #526078; }
-.reveal-button { margin-top: 18px; }
+.answer-panel dl { display: grid; gap: 10px; max-width: 580px; margin: 18px auto 0; text-align: left; }
+.answer-panel dl div { padding-top: 10px; border-top: 1px solid #cbdcff; }
+.answer-panel dt { color: var(--blue); font-size: 9px; font-weight: 900; letter-spacing: .08em; }
+.answer-panel dd { margin: 4px 0 0; color: #526078; font-size: 13px; line-height: 1.55; }
+.reveal-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; margin-top: 18px; }
+.reveal-button { min-height: 56px; }
+.hint-button { min-height: 56px; border: 1px solid var(--blue); border-radius: 12px; background: white; color: var(--blue); font-weight: 800; cursor: pointer; }
+.hint-button:disabled { border-color: #c9d0db; color: var(--muted); background: #f1f3f6; cursor: default; }
 .rating-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; }
 .rating-buttons button { min-height: 64px; border: 1px solid #d8dfe8; background: white; border-radius: 12px; color: var(--muted); font-size: 12px; cursor: pointer; }
 .rating-buttons b { width: 22px; height: 22px; display: inline-grid; place-items: center; margin-right: 6px; border-radius: 50%; background: #edf0f4; }
@@ -210,7 +219,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
   .word-row .chevron { grid-column: 2; grid-row: 1 / span 2; }
   .study-card { min-height: 370px; padding: 28px 22px; }
   .answer-panel { width: calc(100% + 44px); margin-left: -22px; margin-right: -22px; margin-bottom: -28px; }
-  .direction-toggle { height: 44px; }
   .rating-buttons { gap: 6px; }
   .rating-buttons button { padding: 8px 4px; }
   .rating-buttons b { display: block; margin: 0 auto 5px; }
