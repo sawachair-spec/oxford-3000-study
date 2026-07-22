@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Cefr = "A1" | "A2" | "B1" | "B2";
 type View = "home" | "search" | "study" | "quiz" | "history" | "detail";
@@ -27,7 +27,6 @@ type LearningHistory = {
 
 const CEFRS: Cefr[] = ["A1", "A2", "B1", "B2"];
 const HISTORY_KEY = "word-study-history-v1";
-const SETTINGS_KEY = "word-study-settings-v1";
 const WEEKLY_SET_KEY = "word-study-weekly-set-v1";
 const DAILY_TARGET = 200;
 
@@ -97,24 +96,10 @@ function chooseWeeklySet(records: WordRecord[], preferredId?: string | null) {
   return selectedIds;
 }
 
-function loadSettings(): { selectedLevels: Cefr[] } {
-  try {
-    const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? "{}");
-    const levels: Cefr[] = Array.isArray(saved.selectedLevels)
-      ? CEFRS.filter((level) => saved.selectedLevels.includes(level))
-      : (["A1"] as Cefr[]);
-    return { selectedLevels: levels.length ? levels : (["A1"] as Cefr[]) };
-  } catch {
-    return { selectedLevels: ["A1"] as Cefr[] };
-  }
-}
-
 export default function Home() {
-  const initialSettings = useMemo(loadSettings, []);
   const [records, setRecords] = useState<WordRecord[]>([]);
   const [history, setHistory] = useState<LearningHistory[]>([]);
   const [view, setView] = useState<View>("home");
-  const [selectedLevels, setSelectedLevels] = useState<Cefr[]>(initialSettings.selectedLevels);
   const [searchCefr, setSearchCefr] = useState<Cefr>("A1");
   const [selected, setSelected] = useState<WordRecord | null>(null);
   const [weeklySetIds, setWeeklySetIds] = useState<string[]>([]);
@@ -126,7 +111,6 @@ export default function Home() {
   const [posFilter, setPosFilter] = useState("all");
   const [quizChoices, setQuizChoices] = useState<WordRecord[]>([]);
   const [quizAnswered, setQuizAnswered] = useState<string | null>(null);
-  const preferredRecordId = useRef<string | null>(null);
 
   useEffect(() => {
     const dataFiles = [1, 2, 3, 4].map(
@@ -155,47 +139,33 @@ export default function Home() {
     if (history.length) localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
   }, [history]);
 
-  useEffect(() => {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ selectedLevels }));
-  }, [selectedLevels]);
-
   const recordMap = useMemo(() => new Map(records.map((record) => [record.id, record])), [records]);
-  const studyPool = useMemo(
-    () => records.filter((record) => selectedLevels.includes(record.cefr)),
-    [records, selectedLevels],
-  );
   useEffect(() => {
-    if (!studyPool.length) {
+    if (!records.length) {
       setWeeklySetIds([]);
       setStudyOrderIds([]);
       return;
     }
-    const preferredId = preferredRecordId.current;
-    preferredRecordId.current = null;
     const weekKey = formatDateKey(getWeekStart());
-    const levelKey = selectedLevels.join(",");
-    const availableIds = new Set(studyPool.map((record) => record.id));
+    const poolKey = "ALL";
+    const availableIds = new Set(records.map((record) => record.id));
     let savedIds: string[] = [];
     try {
       const saved = JSON.parse(localStorage.getItem(WEEKLY_SET_KEY) ?? "{}");
-      if (saved.weekKey === weekKey && saved.levelKey === levelKey && Array.isArray(saved.recordIds)) {
+      if (saved.weekKey === weekKey && saved.poolKey === poolKey && Array.isArray(saved.recordIds)) {
         savedIds = saved.recordIds.filter((id: unknown): id is string => typeof id === "string" && availableIds.has(id));
       }
     } catch {
       savedIds = [];
     }
-    const expectedSize = Math.min(DAILY_TARGET, new Set(studyPool.map((record) => displayWord(record.word).toLocaleLowerCase())).size);
-    let weeklyIds = savedIds.length === expectedSize ? savedIds : chooseWeeklySet(studyPool, preferredId);
-    if (preferredId && availableIds.has(preferredId) && !weeklyIds.includes(preferredId)) {
-      weeklyIds = [preferredId, ...weeklyIds].slice(0, expectedSize);
-    }
-    localStorage.setItem(WEEKLY_SET_KEY, JSON.stringify({ weekKey, levelKey, recordIds: weeklyIds }));
+    const expectedSize = Math.min(DAILY_TARGET, new Set(records.map((record) => displayWord(record.word).toLocaleLowerCase())).size);
+    const weeklyIds = savedIds.length === expectedSize ? savedIds : chooseWeeklySet(records);
+    localStorage.setItem(WEEKLY_SET_KEY, JSON.stringify({ weekKey, poolKey, recordIds: weeklyIds }));
     setWeeklySetIds(weeklyIds);
-    const remainingIds = weeklyIds.filter((id) => id !== preferredId);
-    setStudyOrderIds(preferredId && weeklyIds.includes(preferredId) ? [preferredId, ...shuffle(remainingIds)] : shuffle(weeklyIds));
+    setStudyOrderIds(shuffle(weeklyIds));
     setStudyIndex(0);
     setRevealed(false);
-  }, [studyPool, selectedLevels]);
+  }, [records]);
 
   const studyDeck = useMemo(
     () => studyOrderIds.map((id) => recordMap.get(id)).filter((record): record is WordRecord => Boolean(record)),
@@ -245,15 +215,6 @@ export default function Home() {
   function navigate(next: View) {
     setView(next);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function toggleLevel(level: Cefr) {
-    setSelectedLevels((levels) => {
-      if (levels.includes(level)) {
-        return levels.length === 1 ? levels : levels.filter((item) => item !== level);
-      }
-      return CEFRS.filter((item) => [...levels, level].includes(item));
-    });
   }
 
   function reshuffleStudy() {
@@ -313,23 +274,18 @@ export default function Home() {
   }
 
   function studySpecificRecord(record: WordRecord) {
-    preferredRecordId.current = record.id;
-    setSelectedLevels([record.cefr]);
-    if (selectedLevels.length === 1 && selectedLevels[0] === record.cefr) {
-      const updatedSet = weeklySetIds.includes(record.id)
-        ? weeklySetIds
-        : [record.id, ...weeklySetIds].slice(0, DAILY_TARGET);
-      setWeeklySetIds(updatedSet);
-      setStudyOrderIds([record.id, ...shuffle(updatedSet.filter((id) => id !== record.id))]);
-      localStorage.setItem(WEEKLY_SET_KEY, JSON.stringify({
-        weekKey: formatDateKey(getWeekStart()),
-        levelKey: record.cefr,
-        recordIds: updatedSet,
-      }));
-      setStudyIndex(0);
-      setRevealed(false);
-      preferredRecordId.current = null;
-    }
+    const updatedSet = weeklySetIds.includes(record.id)
+      ? weeklySetIds
+      : [record.id, ...weeklySetIds].slice(0, DAILY_TARGET);
+    setWeeklySetIds(updatedSet);
+    setStudyOrderIds([record.id, ...shuffle(updatedSet.filter((id) => id !== record.id))]);
+    localStorage.setItem(WEEKLY_SET_KEY, JSON.stringify({
+      weekKey: formatDateKey(getWeekStart()),
+      poolKey: "ALL",
+      recordIds: updatedSet,
+    }));
+    setStudyIndex(0);
+    setRevealed(false);
     navigate("study");
   }
 
@@ -382,15 +338,9 @@ export default function Home() {
 
             <section className="paper-section">
               <div className="section-heading editorial"><h2>最近の学習</h2><button onClick={() => navigate("history")}>すべて見る</button></div>
-              <p className="level-picker-label">出題レベル（複数選択）</p>
-              <div className="cefr-pills" role="group" aria-label="出題するCEFRレベル">
-                {CEFRS.map((level) => <button key={level} aria-pressed={selectedLevels.includes(level)} className={selectedLevels.includes(level) ? "active" : ""} onClick={() => toggleLevel(level)}>{level}</button>)}
-              </div>
+              <p className="all-levels-note">A1〜B2の全単語からランダム出題</p>
               <div className="recent-list">
-                {history.filter((item) => {
-                  const record = recordMap.get(item.record_id);
-                  return record && selectedLevels.includes(record.cefr);
-                }).slice(0, 4).map((item) => {
+                {history.slice(0, 4).map((item) => {
                   const record = recordMap.get(item.record_id);
                   if (!record) return null;
                   return <button className="history-card" key={item.history_id} onClick={() => openRecord(record)}>
@@ -400,10 +350,7 @@ export default function Home() {
                     <span className={`result ${item.result}`}>{resultLabel[item.result]}</span><span className="chevron">›</span>
                   </button>;
                 })}
-                {!history.some((item) => {
-                  const level = recordMap.get(item.record_id)?.cefr;
-                  return level ? selectedLevels.includes(level) : false;
-                }) && <div className="empty-state">選択中のレベルには、まだ履歴がありません。<br />最初のカードを開いてみましょう。</div>}
+                {!history.length && <div className="empty-state">まだ学習履歴がありません。<br />最初のカードを開いてみましょう。</div>}
               </div>
               <p className="public-note">個人学習用の非公式プロジェクトです。Oxford University PressおよびOxford Learner&apos;s Dictionariesとは提携していません。</p>
             </section>
@@ -436,7 +383,7 @@ export default function Home() {
           <div className="page study-page">
             <div className="study-head"><button onClick={() => navigate("home")}>‹ 終了</button><span>{studyDeck.length ? (studyIndex % studyDeck.length) + 1 : 0} / {studyDeck.length}</span><button onClick={startQuiz}>4択クイズ</button></div>
             <div className="study-settings">
-              <div className="study-levels"><span>出題レベル</span><div className="cefr-pills compact">{CEFRS.map((level) => <button key={level} aria-pressed={selectedLevels.includes(level)} className={selectedLevels.includes(level) ? "active" : ""} onClick={() => toggleLevel(level)}>{level}</button>)}</div></div>
+              <span className="study-pool-note">全3,809レコードから選ばれた今週の200単語</span>
               <div className="study-controls">
                 <button className="shuffle-button" onClick={reshuffleStudy}>順番をシャッフル</button>
                 <button className="direction-toggle" onClick={() => setDirection((value) => value === "en-ja" ? "ja-en" : "en-ja")}>{direction === "en-ja" ? "英 → 日" : "日 → 英"}</button>
